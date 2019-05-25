@@ -53,5 +53,9 @@ vector<double> load_data(char* filename) {
 
 
 int main(int argc, char** argv) {
+
+  vector<double> data = load_data(argv[1]);
+  cout << "Size=" << data.size() << endl;
+
   return 0;
 }
