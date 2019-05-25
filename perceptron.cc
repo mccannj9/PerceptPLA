@@ -26,6 +26,31 @@ vector<string> split(const string& str, char delim) {
   return tokens;
 }
 
+vector<double> load_data(char* filename) {
+  ifstream datafile;
+  datafile.open(filename);
+
+  vector<double> data;
+
+  if (datafile.is_open()) {
+    string line;
+    while (getline(datafile, line)) {
+      auto data_points = split(line, ' ');
+      for (string point : data_points) {
+        // stod changes string to double
+        data.push_back(stod(point));
+      }
+    }
+    datafile.close();
+  }
+
+  else {
+    cout << "Could not open file " << filename << endl;
+  }
+
+  return data;
+}
+
 
 int main(int argc, char** argv) {
   return 0;
