@@ -101,15 +101,6 @@ vector<T> scalar_multiplication(vector<T>& x, U a) {
   return result;
 }
 
-template<typename T, typename U>
-void sca_mul(vector<T>& x, U a) {
-
-  for (size_t i = 0; i < x.size(); i++) {
-    x[i] /= a;
-  }
-
-}
-
 template<typename T>
 void vector_norm(vector<T>& x) {
   double length {0.0};
@@ -139,7 +130,7 @@ short check_sign(T val) {
 }
 
 template<typename T>
-vector<T> peel(vector<T>& data, int dim, int placeholder) {
+vector<T> peel(const vector<T>& data, int dim, int placeholder) {
   vector<T> peeled;
   for (int i = 0; i < dim; i++) {
     peeled.push_back(data.at(i+placeholder));
@@ -169,7 +160,6 @@ vector<double> learn(
   for (int i = 0; i < dim; i++) {
     w.push_back(distribution(generator));
   }
-  // vector_norm(w);
 
   // data preparation for algorithm
   bool converged {false};
@@ -207,7 +197,6 @@ vector<double> learn(
 int main(int argc, char** argv) {
 
   if (argc != 5) {
-    cout << "Sad!" << endl;
     cout << "Usage: ./perceptron data_path labels_path max_iters seed" << endl;
     return 1;
   }
