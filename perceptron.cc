@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <cmath>
 
 using namespace std;
 
@@ -69,7 +70,7 @@ int get_data_dim(char* filename) {
 }
 
 template<typename T>
-double scalar_product(vector<T> x, vector<T> y) {
+double scalar_product(vector<T>& x, vector<T>& y) {
   double result;
 
   for (size_t i = 0; i < x.size(); i++) {
@@ -78,8 +79,62 @@ double scalar_product(vector<T> x, vector<T> y) {
   return result;
 }
 
+template<typename T>
+vector<T> vector_addition(vector<T>& x, vector<T>& y) {
+  vector<double> result;
+
+  for (size_t i = 0; i < x.size(); i++) {
+    result.push_back(x.at(i) + y.at(i));
+  }
+
+  return result;
+}
+
+template<typename T, typename U>
+vector<T> scalar_multiplication(vector<T>& x, U a) {
+  vector<double> result;
+
+  for (size_t i = 0; i < x.size(); i++) {
+    result.push_back(x.at(i) * a);
+  }
+
+  return result;
+}
+
+template<typename T, typename U>
+void sca_mul(vector<T>& x, U a) {
+
+  for (size_t i = 0; i < x.size(); i++) {
+    x[i] /= a;
+  }
+
+}
+
+template<typename T>
+void vector_norm(vector<T>& x) {
+  double length {0.0};
+
+  for (size_t i = 0; i < x.size(); i++) {
+    length += pow(x.at(i), 2);
+  }
+
+  length = sqrt(length);
+
+  for (size_t i = 0; i < x.size(); i++) {
+    x[i] /= length;
+  }
+
+}
+
+template<typename T>
+void update_weights(vector<double>& weights, vector<double>& inputs, T scalar) {
+  for (size_t i = 0; i < inputs.size(); i++) {
+    weights[i] += scalar * inputs.at(i);
+  }
+}
+
 template <typename T>
-int check_sign(T val) {
+short check_sign(T val) {
   return (T(0) < val) - (val < T(0));
 }
 
@@ -92,48 +147,79 @@ vector<T> peel(vector<T>& data, int dim, int placeholder) {
   return peeled;
 }
 
-vector<double> learn(vector<double> data, vector<short> labels, int dim, long seed) {
-  bool converged {false};
+void Log(const string& msg, int iters, vector<double> weights) {
+  cout << "[" << msg << ": " << iters << "] ";
+  for (auto x: weights) {
+    cout << x << ' ';
+  }
+  cout << endl;
+}
+
+vector<double> learn(
+  vector<double> data, vector<short> labels,
+  int dim, long max_iters=1000, long seed=1
+) {
+
   default_random_engine generator;
   generator.seed(seed);
   uniform_real_distribution<double> distribution(-1.0, 1.0);
-  vector<double> w;
 
+  // Randomly initialize the weight vector -> (-1.0, 1.0)
+  vector<double> w;
   for (int i = 0; i < dim; i++) {
     w.push_back(distribution(generator));
   }
+  // vector_norm(w);
 
+  // data preparation for algorithm
+  bool converged {false};
+  int iters {0};
   vector<double> input;
   int label_counter {0};
+  string msg = "Iter";
 
-  while (!converged) {
+  while(!converged) {
     converged = true;
     label_counter = 0;
+    Log(msg, iters, w);
     for (size_t i = 0; i < data.size(); i+=dim) {
-      input = peel(data, dim, i);
-      auto p = scalar_product(w, input);
-      for (auto x: input) {
-        cout << x << ' ';
+      auto input = peel(data, dim, i);
+      auto sp = check_sign(scalar_product(input, w));
+      auto label = labels.at(label_counter);
+      if (sp != label) {
+        update_weights(w, input, label);
+        converged = false;
+        break;
       }
-      cout << labels.at(label_counter) << ' ' << check_sign(p) << endl;
       label_counter++;
     }
+    iters++;
+    if (iters > max_iters) {
+      converged = true;
+    }
   }
-
+  vector_norm(w);
+  msg = "Final";
+  Log(msg, iters-1, w);
   return w;
 }
 
 int main(int argc, char** argv) {
 
+  if (argc != 5) {
+    cout << "Sad!" << endl;
+    cout << "Usage: ./perceptron data_path labels_path max_iters seed" << endl;
+    return 1;
+  }
+
   vector<double> data;
-  data = load_data(argv[1], data);
   vector<short> labels;
-  labels = load_data(argv[2], labels);
-  cout << "Data Size=" << data.size() << endl;
-  cout << "Labels Size=" << labels.size() << endl;
 
   int dim = get_data_dim(argv[1]);
-  vector<double> w = learn(data, labels, dim, atol(argv[3]));
+  data = load_data(argv[1], data);
+  labels = load_data(argv[2], labels);
+
+  vector<double> w = learn(data, labels, dim, atol(argv[3]), atol(argv[4]));
 
   return 0;
 }
