@@ -31,8 +31,6 @@ vector<T> load_data(char* filename, vector<T>& data) {
   ifstream datafile;
   datafile.open(filename);
 
-  // vector<T> data;
-
   if (datafile.is_open()) {
     string line;
     while (getline(datafile, line)) {
@@ -52,6 +50,55 @@ vector<T> load_data(char* filename, vector<T>& data) {
   return data;
 }
 
+int get_data_dim(char* filename) {
+  ifstream datafile;
+  datafile.open(filename);
+
+  if (datafile.is_open()) {
+    string line;
+    getline(datafile, line);
+    auto data_points = split(line, ' ');
+    datafile.close();
+    return data_points.size();
+  }
+
+  else {
+    return 0;
+  }
+
+}
+
+template<typename T>
+vector<T> peel(vector<T>& data, int dim, int placeholder) {
+  vector<T> peeled;
+  for (int i = 0; i < dim; i++) {
+    peeled.push_back(data.at(i+placeholder));
+  }
+  return peeled;
+}
+
+vector<double> learn(vector<double> data, vector<short> labels, int dim) {
+  bool converged {false};
+  vector<double> w = {0.0, 0.0, 0.0};
+  vector<double> input;
+  int label_counter {0};
+
+  while (!converged) {
+    converged = true;
+    label_counter = 0;
+    for (size_t i = 0; i < data.size(); i+=dim) {
+      input = peel(data, dim, i);
+      for (auto x: input) {
+        cout << x << ' ';
+      }
+      cout << labels.at(label_counter) << endl;
+      label_counter++;
+    }
+  }
+
+  return w;
+}
+
 int main(int argc, char** argv) {
 
   vector<double> data;
@@ -61,9 +108,8 @@ int main(int argc, char** argv) {
   cout << "Data Size=" << data.size() << endl;
   cout << "Labels Size=" << labels.size() << endl;
 
-  // for (size_t i = 0; i < data.size(); i++) {
-  //   cout << data.at(i) << endl;
-  // }
+  int dim = get_data_dim(argv[1]);
+  vector<double> w = learn(data, labels, dim);
 
   return 0;
 }
