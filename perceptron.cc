@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <random>
 
 using namespace std;
 
@@ -65,7 +66,21 @@ int get_data_dim(char* filename) {
   else {
     return 0;
   }
+}
 
+template<typename T>
+double scalar_product(vector<T> x, vector<T> y) {
+  double result;
+
+  for (size_t i = 0; i < x.size(); i++) {
+    result += x.at(i) * y.at(i);
+  }
+  return result;
+}
+
+template <typename T>
+int check_sign(T val) {
+  return (T(0) < val) - (val < T(0));
 }
 
 template<typename T>
@@ -77,9 +92,17 @@ vector<T> peel(vector<T>& data, int dim, int placeholder) {
   return peeled;
 }
 
-vector<double> learn(vector<double> data, vector<short> labels, int dim) {
+vector<double> learn(vector<double> data, vector<short> labels, int dim, long seed) {
   bool converged {false};
-  vector<double> w = {0.0, 0.0, 0.0};
+  default_random_engine generator;
+  generator.seed(seed);
+  uniform_real_distribution<double> distribution(-1.0, 1.0);
+  vector<double> w;
+
+  for (int i = 0; i < dim; i++) {
+    w.push_back(distribution(generator));
+  }
+
   vector<double> input;
   int label_counter {0};
 
@@ -88,10 +111,11 @@ vector<double> learn(vector<double> data, vector<short> labels, int dim) {
     label_counter = 0;
     for (size_t i = 0; i < data.size(); i+=dim) {
       input = peel(data, dim, i);
+      auto p = scalar_product(w, input);
       for (auto x: input) {
         cout << x << ' ';
       }
-      cout << labels.at(label_counter) << endl;
+      cout << labels.at(label_counter) << ' ' << check_sign(p) << endl;
       label_counter++;
     }
   }
@@ -109,7 +133,7 @@ int main(int argc, char** argv) {
   cout << "Labels Size=" << labels.size() << endl;
 
   int dim = get_data_dim(argv[1]);
-  vector<double> w = learn(data, labels, dim);
+  vector<double> w = learn(data, labels, dim, atol(argv[3]));
 
   return 0;
 }
