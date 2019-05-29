@@ -115,9 +115,11 @@ void vector_norm(vector<T>& x) {
 }
 
 template<typename T>
-void update_weights(vector<double>& weights, const vector<double>& inputs, T scalar) {
+void update_weights(
+  vector<double>& weights, const vector<double>& inputs, T scalar, double learning_rate
+) {
   for (size_t i = 0; i < inputs.size(); i++) {
-    weights[i] += scalar * inputs.at(i);
+    weights[i] += scalar * learning_rate * inputs.at(i);
   }
 }
 
@@ -145,7 +147,7 @@ void Log(const string& msg, const int iters, const vector<double> weights) {
 
 vector<double> learn(
   const vector<double>& data, const vector<short>& labels,
-  int dim, long max_iters=1000, long seed=1
+  int dim, long max_iters=1000, long seed=1, double learning_rate=0.01
 ) {
 
   default_random_engine generator;
@@ -180,7 +182,7 @@ vector<double> learn(
 
       if (sp != labels.at(label_counter)) {
         // label = -sp
-        update_weights(w, input, -sp);
+        update_weights(w, input, -sp, learning_rate);
         converged = false;
         break;
       }
@@ -199,8 +201,8 @@ vector<double> learn(
 
 int main(int argc, char** argv) {
 
-  if (argc != 5) {
-    cout << "Usage: ./perceptron data_path labels_path max_iters seed" << endl;
+  if (argc != 6) {
+    cout << "Usage: ./perceptron data_path labels_path max_iters seed learning_rate" << endl;
     return 1;
   }
 
@@ -211,7 +213,7 @@ int main(int argc, char** argv) {
   load_data(argv[1], data);
   load_data(argv[2], labels);
 
-  vector<double> w = learn(data, labels, dim, atol(argv[3]), atol(argv[4]));
+  vector<double> w = learn(data, labels, dim, atol(argv[3]), atol(argv[4]), atof(argv[5]));
 
   return 0;
 }
