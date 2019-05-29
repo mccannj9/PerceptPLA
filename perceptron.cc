@@ -169,7 +169,6 @@ vector<double> learn(
   int label_counter {0};
   string msg = "Iter";
   short sp {0};
-  short label {0};
 
   while(!converged) {
     converged = true;
@@ -178,9 +177,10 @@ vector<double> learn(
     for (size_t i = 0; i < data.size(); i+=dim) {
       input = peel(data, dim, i);
       sp = check_sign(scalar_product(input, w));
-      label = labels.at(label_counter);
-      if (sp != label) {
-        update_weights(w, input, label);
+
+      if (sp != labels.at(label_counter)) {
+        // label = -sp
+        update_weights(w, input, -sp);
         converged = false;
         break;
       }
