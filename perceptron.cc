@@ -7,7 +7,7 @@
 
 using namespace std;
 
-vector<string> split(const string& str, char delim) {
+vector<string> split(const string& str, const char delim) {
   // A function for parsing delimited lines of data
   vector<string> tokens;
   size_t prev = 0, pos = 0;
@@ -29,7 +29,7 @@ vector<string> split(const string& str, char delim) {
 }
 
 template<typename T>
-vector<T> load_data(char* filename, vector<T>& data) {
+void load_data(const char* filename, vector<T>& data) {
   ifstream datafile;
   datafile.open(filename);
 
@@ -48,11 +48,9 @@ vector<T> load_data(char* filename, vector<T>& data) {
   else {
     cout << "Could not open file " << filename << endl;
   }
-
-  return data;
 }
 
-int get_data_dim(char* filename) {
+int get_data_dim(const char* filename) {
   ifstream datafile;
   datafile.open(filename);
 
@@ -114,11 +112,10 @@ void vector_norm(vector<T>& x) {
   for (size_t i = 0; i < x.size(); i++) {
     x[i] /= length;
   }
-
 }
 
 template<typename T>
-void update_weights(vector<double>& weights, vector<double>& inputs, T scalar) {
+void update_weights(vector<double>& weights, const vector<double>& inputs, T scalar) {
   for (size_t i = 0; i < inputs.size(); i++) {
     weights[i] += scalar * inputs.at(i);
   }
@@ -138,7 +135,7 @@ vector<T> peel(const vector<T>& data, int dim, int placeholder) {
   return peeled;
 }
 
-void Log(const string& msg, int iters, vector<double> weights) {
+void Log(const string& msg, const int iters, const vector<double> weights) {
   cout << "[" << msg << ": " << iters << "] ";
   for (auto x: weights) {
     cout << x << ' ';
@@ -147,7 +144,7 @@ void Log(const string& msg, int iters, vector<double> weights) {
 }
 
 vector<double> learn(
-  vector<double> data, vector<short> labels,
+  const vector<double>& data, const vector<short>& labels,
   int dim, long max_iters=1000, long seed=1
 ) {
 
@@ -173,7 +170,8 @@ vector<double> learn(
     label_counter = 0;
     Log(msg, iters, w);
     for (size_t i = 0; i < data.size(); i+=dim) {
-      auto input = peel(data, dim, i);
+      input = peel(data, dim, i);
+      Log(msg, iters, input);
       auto sp = check_sign(scalar_product(input, w));
       auto label = labels.at(label_counter);
       if (sp != label) {
@@ -205,8 +203,8 @@ int main(int argc, char** argv) {
   vector<short> labels;
 
   int dim = get_data_dim(argv[1]);
-  data = load_data(argv[1], data);
-  labels = load_data(argv[2], labels);
+  load_data(argv[1], data);
+  load_data(argv[2], labels);
 
   vector<double> w = learn(data, labels, dim, atol(argv[3]), atol(argv[4]));
 
