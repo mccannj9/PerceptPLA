@@ -201,9 +201,16 @@ vector<double> learn(
 
 int main(int argc, char** argv) {
 
+  // convergence sped up greatly with appropriate learning rate
+
   if (argc != 6) {
     cout << "Usage: ./perceptron data_path labels_path max_iters seed learning_rate" << endl;
     return 1;
+  }
+
+  if (atof(argv[5]) <= 0) {
+    cout << "5th arg (learning_rate) MUST be > 0" << endl;
+    return 2;
   }
 
   vector<double> data;
