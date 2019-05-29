@@ -69,7 +69,7 @@ int get_data_dim(const char* filename) {
 
 template<typename T>
 double scalar_product(vector<T>& x, vector<T>& y) {
-  double result;
+  double result {0.0};
 
   for (size_t i = 0; i < x.size(); i++) {
     result += x.at(i) * y.at(i);
@@ -154,6 +154,7 @@ vector<double> learn(
 
   // Randomly initialize the weight vector -> (-1.0, 1.0)
   vector<double> w;
+  w.reserve(dim);
   for (int i = 0; i < dim; i++) {
     w.push_back(distribution(generator));
   }
@@ -161,9 +162,14 @@ vector<double> learn(
   // data preparation for algorithm
   bool converged {false};
   int iters {0};
+
   vector<double> input;
+  input.reserve(dim);
+
   int label_counter {0};
   string msg = "Iter";
+  short sp {0};
+  short label {0};
 
   while(!converged) {
     converged = true;
@@ -171,9 +177,8 @@ vector<double> learn(
     Log(msg, iters, w);
     for (size_t i = 0; i < data.size(); i+=dim) {
       input = peel(data, dim, i);
-      Log(msg, iters, input);
-      auto sp = check_sign(scalar_product(input, w));
-      auto label = labels.at(label_counter);
+      sp = check_sign(scalar_product(input, w));
+      label = labels.at(label_counter);
       if (sp != label) {
         update_weights(w, input, label);
         converged = false;
