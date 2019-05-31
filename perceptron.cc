@@ -34,28 +34,26 @@ void reset_stream(ifstream& file) {
 }
 
 void feed_data(string data_as_string, vector<double>& data) {
-// void feed_data(ifstream datafile, vector<double>& data) {
-  // string line;
-  // getline(datafile, line);
-  
+
   auto tokens = split(data_as_string, ' ');
   vector<double> swap_in;
+
   for (auto datum: tokens) {
     swap_in.push_back(stod(datum));
   }
+
   data.swap(swap_in);
 }
 
 void feed_data(string data_as_string, vector<int>& data) {
-// void feed_data(ifstream datafile, vector<int>& data) {
-  // string line;
-  // getline(datafile, line);
-  
+
   auto tokens = split(data_as_string, ' ');
   vector<int> swap_in;
+
   for (auto datum: tokens) {
     swap_in.push_back(stoi(datum));
   }
+
   data.swap(swap_in);
 }
 
@@ -177,11 +175,11 @@ void Log(const string& msg, const int iters, const vector<double> weights) {
 }
 
 vector<double> initialize_weights(int dim, long seed) {
-  
+
   default_random_engine generator;
   generator.seed(seed);
   uniform_real_distribution<double> distribution(-1.0, 1.0);
-  
+
   vector<double> w;
   w.reserve(dim);
   for (int i = 0; i < dim; i++) {
@@ -195,7 +193,7 @@ vector<double> learn(
   ifstream& data, ifstream& labels, int data_dim, int labels_dim,
   long max_iters=1000, long seed=1, double learning_rate=0.01
 ) {
-  
+
   vector<double> w = initialize_weights(data_dim, seed);
 
   vector<double> input_data;
@@ -215,7 +213,6 @@ vector<double> learn(
 
     getline(data, line_of_data);
     getline(labels, line_of_labels);
-    // cout << "got lines" << endl;
 
     if (data.eof()) {
       data.close();
@@ -224,15 +221,8 @@ vector<double> learn(
 
     feed_data(line_of_data, input_data);
     feed_data(line_of_labels, output_labels);
-    // cout << "Fed the data" << endl;
-    // Log(msg, iters, w);
-    // Log(msg, iters, input_data);
-    // test_scalar_product = scalar_product(input_data, w);
-    // cout << "Got scalar product" << test_scalar_product << endl;
-    
 
     sp = check_sign(scalar_product(input_data, w));
-    // cout << "Checked the sign" << endl;
 
     if (sp != output_labels.at(0)) {
       update_weights(w, input_data, -sp, learning_rate);
@@ -248,9 +238,12 @@ vector<double> learn(
     }
   }
 
+  // return result with norm of 1
+  vector_norm(w);
+  Log("End ", iters, w);
+
   return w;
 }
-
 
 vector<double> learn(
   const vector<double>& data, const vector<short> labels, int dim,
@@ -325,14 +318,12 @@ int main(int argc, char** argv) {
 
   int data_dim = get_data_dim(argv[1]);
   int labels_dim = get_data_dim(argv[2]);
-  cout << data_dim << "data dim" << endl;
-  cout << labels_dim << "labels dim" << endl;
-  load_data(argv[1], data);
-  load_data(argv[2], labels);
+  // load_data(argv[1], data);
+  // load_data(argv[2], labels);
 
   ifstream input_data;
   ifstream output_labels;
-  
+
   input_data.open(argv[1]);
   output_labels.open(argv[2]);
 
