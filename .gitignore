@@ -1,3 +1,12 @@
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+# Added by me
+.vscode/*
 test_python.py
-.vscode/ipch/23ea3b851983feae/perceptron.ipch
-perceptron
